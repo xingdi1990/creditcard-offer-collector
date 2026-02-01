@@ -26,10 +26,10 @@ function detectSite(url) {
   return null;
 }
 
-// Shared banner creation function
+// Shared banner creation function (injected into page)
 function createBanner(siteName, bannerColor) {
   const bannerHTML = `
-  <div id="offer-collector-banner">
+  <div id="offer-collector-banner" style="--banner-color: ${bannerColor}">
     <button id="offer-collector-close">x</button>
     <span>${siteName} Offer Collector is currently running on this page.</span> <br>
     <span id="offer-banner-content"></span> <br>
@@ -50,7 +50,7 @@ function createBanner(siteName, bannerColor) {
       position: fixed;
       bottom: 0;
       left: 0;
-      background-color: var(--banner-color, ${bannerColor});
+      background-color: var(--banner-color);
       padding: 20px;
       color: white;
       width: 100%;
@@ -61,7 +61,7 @@ function createBanner(siteName, bannerColor) {
       box-sizing: border-box;
     }
 
-    #offer-collector-banner a, #offer-collector-banner #cta-content {
+    #offer-collector-banner a {
       border-radius: 100px;
       cursor: pointer;
       display: inline-block;
@@ -75,13 +75,6 @@ function createBanner(siteName, bannerColor) {
       user-select: none;
       -webkit-user-select: none;
       touch-action: manipulation;
-    }
-
-    #offer-collector-banner .center {
-      margin: auto;
-      width: 50%;
-      padding: 10px;
-      text-align: center;
     }
 
     #offer-collector-banner a#offer-collector-bug {
@@ -99,31 +92,105 @@ function createBanner(siteName, bannerColor) {
   `;
 
   document.body.insertAdjacentHTML('beforeend', bannerHTML);
-  document.getElementById('offer-collector-banner').style.setProperty('--banner-color', bannerColor);
   document.getElementById('offer-collector-banner').innerHTML += `<a id='offer-collector-bug' class="btn btn-primary" href="https://github.com/anthropics/claude-code/issues" target="_blank" rel="noopener noreferrer" role="button">Report Bug</a> <br><br>`;
   document.getElementById('offer-banner-content').innerText = `Getting things ready ...`;
 
-  // Attach event handler for close button
   document.getElementById('offer-collector-close').onclick = function() {
     document.getElementById('offer-collector-banner').remove();
     return false;
   };
 }
 
-// Helper function to update banner status
+// Shared status update function
 function updateStatus(text) {
   const el = document.getElementById('offer-banner-content');
-  if (el) {
-    el.innerText = text;
-  }
+  if (el) el.innerText = text;
 }
 
-// Amex offer collector
+// Amex offer collector (self-contained for injection)
 async function collectAmexOffers() {
+  const siteName = 'Amex';
+  const bannerColor = '#006fcf';
+
+  // Create banner (inline since we can't call external functions from injected script)
+  const bannerHTML = `
+  <div id="offer-collector-banner" style="--banner-color: ${bannerColor}">
+    <button id="offer-collector-close">x</button>
+    <span>${siteName} Offer Collector is currently running on this page.</span> <br>
+    <span id="offer-banner-content"></span> <br>
+  </div>
+  <style>
+    #offer-collector-close {
+      float: right;
+      display: inline-block;
+      padding: 0 10px 0 0;
+      background: none;
+      border: none;
+      color: white;
+      font-size: 20px;
+      cursor: pointer;
+    }
+
+    #offer-collector-banner {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      background-color: var(--banner-color);
+      padding: 20px;
+      color: white;
+      width: 100%;
+      font-size: 20px;
+      font-weight: bold;
+      text-align: center;
+      z-index: 99999;
+      box-sizing: border-box;
+    }
+
+    #offer-collector-banner a {
+      border-radius: 100px;
+      cursor: pointer;
+      display: inline-block;
+      font-family: -apple-system, system-ui, Roboto, sans-serif;
+      padding: 7px 20px;
+      text-align: center;
+      text-decoration: none;
+      transition: all 250ms;
+      border: 0;
+      font-size: 16px;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: manipulation;
+    }
+
+    #offer-collector-banner a#offer-collector-bug {
+      background-color: #d1320a;
+      box-shadow: rgba(241, 7, 7, 0.2) 0 -25px 18px -14px inset,rgba(241, 7, 7, .15) 0 1px 2px,rgba(241, 7, 7, .15) 0 2px 4px,rgba(241, 7, 7, .15) 0 4px 8px,rgba(241, 7, 7, .15) 0 8px 16px,rgba(241, 7, 7, .15) 0 16px 32px;
+      color: white;
+      margin-top: 10px;
+    }
+
+    #offer-collector-banner a#offer-collector-bug:hover {
+      box-shadow: rgba(241, 7, 7, .35) 0 -25px 18px -14px inset,rgba(241, 7, 7, .25) 0 1px 2px,rgba(241, 7, 7,.25) 0 2px 4px,rgba(241, 7, 7,.25) 0 4px 8px,rgba(241, 7, 7,.25) 0 8px 16px,rgba(241, 7, 7,.25) 0 16px 32px;
+      transform: scale(1.05) rotate(-1deg);
+    }
+  </style>
+  `;
+
+  document.body.insertAdjacentHTML('beforeend', bannerHTML);
+  document.getElementById('offer-collector-banner').innerHTML += `<a id='offer-collector-bug' class="btn btn-primary" href="https://github.com/anthropics/claude-code/issues" target="_blank" rel="noopener noreferrer" role="button">Report Bug</a> <br><br>`;
+  document.getElementById('offer-banner-content').innerText = `Getting things ready ...`;
+
+  document.getElementById('offer-collector-close').onclick = function() {
+    document.getElementById('offer-collector-banner').remove();
+    return false;
+  };
+
+  function updateStatus(text) {
+    const el = document.getElementById('offer-banner-content');
+    if (el) el.innerText = text;
+  }
+
   console.log('[Offer Collector] Starting Amex collection...');
-
-  createBanner('Amex', '#006fcf');
-
   await new Promise(r => setTimeout(r, 4000));
 
   const offerButtons = Array.from(document.getElementsByClassName("offer-cta")).filter(btn => btn.title == "Add to Card");
@@ -139,12 +206,90 @@ async function collectAmexOffers() {
   console.log('[Offer Collector] Amex collection complete!');
 }
 
-// Citi offer collector
+// Citi offer collector (self-contained for injection)
 async function collectCitiOffers() {
+  const siteName = 'Citi';
+  const bannerColor = '#056DAE';
+
+  // Create banner (inline since we can't call external functions from injected script)
+  const bannerHTML = `
+  <div id="offer-collector-banner" style="--banner-color: ${bannerColor}">
+    <button id="offer-collector-close">x</button>
+    <span>${siteName} Offer Collector is currently running on this page.</span> <br>
+    <span id="offer-banner-content"></span> <br>
+  </div>
+  <style>
+    #offer-collector-close {
+      float: right;
+      display: inline-block;
+      padding: 0 10px 0 0;
+      background: none;
+      border: none;
+      color: white;
+      font-size: 20px;
+      cursor: pointer;
+    }
+
+    #offer-collector-banner {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      background-color: var(--banner-color);
+      padding: 20px;
+      color: white;
+      width: 100%;
+      font-size: 20px;
+      font-weight: bold;
+      text-align: center;
+      z-index: 99999;
+      box-sizing: border-box;
+    }
+
+    #offer-collector-banner a {
+      border-radius: 100px;
+      cursor: pointer;
+      display: inline-block;
+      font-family: -apple-system, system-ui, Roboto, sans-serif;
+      padding: 7px 20px;
+      text-align: center;
+      text-decoration: none;
+      transition: all 250ms;
+      border: 0;
+      font-size: 16px;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: manipulation;
+    }
+
+    #offer-collector-banner a#offer-collector-bug {
+      background-color: #d1320a;
+      box-shadow: rgba(241, 7, 7, 0.2) 0 -25px 18px -14px inset,rgba(241, 7, 7, .15) 0 1px 2px,rgba(241, 7, 7, .15) 0 2px 4px,rgba(241, 7, 7, .15) 0 4px 8px,rgba(241, 7, 7, .15) 0 8px 16px,rgba(241, 7, 7, .15) 0 16px 32px;
+      color: white;
+      margin-top: 10px;
+    }
+
+    #offer-collector-banner a#offer-collector-bug:hover {
+      box-shadow: rgba(241, 7, 7, .35) 0 -25px 18px -14px inset,rgba(241, 7, 7, .25) 0 1px 2px,rgba(241, 7, 7,.25) 0 2px 4px,rgba(241, 7, 7,.25) 0 4px 8px,rgba(241, 7, 7,.25) 0 8px 16px,rgba(241, 7, 7,.25) 0 16px 32px;
+      transform: scale(1.05) rotate(-1deg);
+    }
+  </style>
+  `;
+
+  document.body.insertAdjacentHTML('beforeend', bannerHTML);
+  document.getElementById('offer-collector-banner').innerHTML += `<a id='offer-collector-bug' class="btn btn-primary" href="https://github.com/anthropics/claude-code/issues" target="_blank" rel="noopener noreferrer" role="button">Report Bug</a> <br><br>`;
+  document.getElementById('offer-banner-content').innerText = `Getting things ready ...`;
+
+  document.getElementById('offer-collector-close').onclick = function() {
+    document.getElementById('offer-collector-banner').remove();
+    return false;
+  };
+
+  function updateStatus(text) {
+    const el = document.getElementById('offer-banner-content');
+    if (el) el.innerText = text;
+  }
+
   console.log('[Offer Collector] Starting Citi collection...');
-
-  createBanner('Citi', '#056DAE');
-
   await new Promise(r => setTimeout(r, 4000));
 
   // Helper function to scroll and load all offers (handles infinite scroll)
