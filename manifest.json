@@ -1,10 +1,14 @@
 {
-  "name": "Amex Offer Collector",
+  "name": "Credit Card Offer Collector",
   "action": {},
   "manifest_version": 3,
-  "version": "0.0.3",
-  "description": "A simple Chrome Extension that adds all Amex offers with a single click",
+  "version": "1.0.0",
+  "description": "Automatically enroll in all credit card offers with a single click. Supports Amex and Citi.",
   "permissions": ["activeTab", "scripting"],
+  "host_permissions": [
+    "https://global.americanexpress.com/*",
+    "https://online.citi.com/*"
+  ],
   "background": {
     "service_worker": "background.js"
   },
